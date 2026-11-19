@@ -87,6 +87,24 @@ class CheckDateTest(unittest.TestCase):
         d2 = contract(self.report, "D-2")
         self.assertNotIn("P-8", {p["payment_id"] for p in d2["payments"]})  # заведён только 12.11
 
+    def test_report_totals_are_sums_of_contract_totals(self):
+        self.assertEqual(totals(self.report), {
+            "works_due": "590000.00",
+            "accepted": "350000.00",
+            "paid": "390000.00",
+            "paid_to_works": "350000.00",
+            "advance_unapplied": "40000.00",
+            "overpaid": "0.00",
+            "accepted_debt": "0.00",
+            "queued": "150000.00",
+            "remaining": "200000.00",
+        })
+
+    def test_overpayment_on_one_contract_does_not_reduce_debt_on_another(self):
+        report = build_report(REAL, date(2026, 11, 12))
+        self.assertEqual(report["totals"]["overpaid"], rub("5000.00"))
+        self.assertEqual(report["totals"]["remaining"], contract(report, "D-1")["totals"]["remaining"])
+
     def test_warnings(self):
         d1 = contract(self.report, "D-1")
         self.assertEqual(len(d1["warnings"]), 2)

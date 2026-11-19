@@ -74,12 +74,21 @@ def _total(values) -> Decimal:
     return sum(values, ZERO)
 
 
+TOTAL_KEYS = (
+    "works_due", "accepted", "paid", "paid_to_works", "advance_unapplied",
+    "overpaid", "accepted_debt", "queued", "remaining",
+)
+
+
 def build_report(data: Dataset, day: date) -> dict:
-    contracts = sorted(data.contracts.values(), key=lambda c: natural_key(c.contract_id))
-    return {
-        "report_date": day,
-        "contracts": [_contract_report(data, contract, day) for contract in contracts if contract.signed_at <= day],
-    }
+    signed = sorted(
+        (contract for contract in data.contracts.values() if contract.signed_at <= day),
+        key=lambda contract: natural_key(contract.contract_id),
+    )
+    contracts = [_contract_report(data, contract, day) for contract in signed]
+    # Итог — сумма итогов договоров: переплата по одному договору не уменьшает долг по другому.
+    totals = {key: _total(contract["totals"][key] for contract in contracts) for key in TOTAL_KEYS}
+    return {"report_date": day, "contracts": contracts, "totals": totals}
 
 
 def _contract_report(data: Dataset, contract: Contract, day: date) -> dict:

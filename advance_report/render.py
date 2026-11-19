@@ -109,4 +109,15 @@ def to_text(report: dict) -> str:
         out += ["", "На эту дату нет подписанных договоров."]
     for contract in report["contracts"]:
         out += ["", "=" * 100, "", *_contract_text(contract)]
+    if len(report["contracts"]) > 1:
+        totals = report["totals"]
+        rows = [
+            ["Выплачено", totals["paid"]],
+            ["Осталось оплатить", totals["remaining"]],
+            ["  из них долг за принятые работы", totals["accepted_debt"]],
+            ["В очереди на оплату", totals["queued"]],
+            ["Переплата", totals["overpaid"]],
+        ]
+        out += ["", "=" * 100, "", "Итого по всем договорам"]
+        out += ["  " + row for row in _table(["", ""], [[label, format_money(value)] for label, value in rows], right={1})[2:]]
     return "\n".join(out) + "\n"
