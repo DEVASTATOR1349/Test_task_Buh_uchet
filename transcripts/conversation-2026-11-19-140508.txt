@@ -1,0 +1,2078 @@
+
+> Привет !
+
+● Привет! Чем займёмся?
+
+> C:\Users\Oleg\Downloads\candidate-B-v4\candidate-B
+
+  Прочитай README.md и data/FORMAT.md и сделай задание: HTTP-сервис на Python
+  без внешних зависимостей, тесты, DECISIONS.md и записка бухгалтеру. Собери
+  локально и сделай git init, в GitHub я выложу сам
+
+● Bash(cd "C:/Users/Oleg/Downloads/candidate-B-v4/candidate-B" && find . -type f
+      | head -100 && echo ---- && cat README.md && echo ---- && cat
+      data/FORMAT.md)
+  ⎿  (No output)
+
+● Bash(cd "C:/Users/Oleg/Downloads/candidate-B-v4/candidate-B/data" && for f in
+      contracts.csv works.csv payments.csv; do echo "==== $f"; cat -A "$f" |
+      head -5; echo; c…)
+  ⎿  (file diff unavailable for this command)
+
+● PowerShell(python --version; py -0p; uv --version; git --version; Get-Content
+            "C:\Users\Oleg\.claude\projects\e--evyxstudio\memory\python314-broke
+            n-use-uv-311.md")
+  ⎿  Python 3.11.15
+       *               e:\evyxstudio\.venv\Scripts\python.exe
+      -V:3.14          C:\Python314\python.exe
+     … +34 lines (ctrl+o to expand)
+
+● Задание понятно, данные содержат несколько ловушек по статусам, отменённым
+  работам и переплатам по D-2. Сейчас начинаю писать код. · summary
+
+● Bash(cd "C:/Users/Oleg/Downloads/candidate-B-v4/candidate-B" && mv README.md
+      TASK.md && mkdir -p advance_report tests && ls)
+  ⎿  (file diff unavailable for this command)
+
+● Write(C:\Users\Oleg\Downloads\candidate-B-v4\candidate-B\advance_report\money.
+       py)
+  ⎿  Wrote 44 lines to C:\Users\Oleg\Downloads\candidate-B-v4\candidate-B\a
+     dvance_report\money.py
+       1 """Деньги и даты: точный разбор и вывод, без float."""
+       2
+       3 from __future__ import annotations
+       4
+       5 import re
+       6 from datetime import date
+       7 from decimal import Decimal
+       8
+       9 ZERO = Decimal("0.00")
+      10 CENT = Decimal("0.01")
+     … +34 lines (ctrl+o to expand)
+
+● Строка с format_money получилась запутанной, перепишу её просто.
+
+● Update(C:\Users\Oleg\Downloads\candidate-B-v4\candidate-B\advance_report\money
+        .py)
+  ⎿  Added 2 lines, removed 1 line
+      37      """Decimal('185000.00') -> '185 000,00' — как пишут суммы в
+           бухгалтерии."""
+      38      sign = "-" if value < 0 else ""
+      39      units, cents = f"{abs(value):.2f}".split(".")
+      40 -    return f"{sign}{int(units):,},{cents}".replace(",", " ", un
+         -its.count("") and len(f"{int(units):,}") - len(units))         
+      40 +    grouped = f"{int(units):,}".replace(",", " ")              
+      41 +    return f"{sign}{grouped},{cents}"                          
+      42 
+      43 
+      44  def format_date(value: date) -> str:
+
+● Write(C:\Users\Oleg\Downloads\candidate-B-v4\candidate-B\advance_report\data.p
+       y)
+  ⎿  Wrote 233 lines to C:\Users\Oleg\Downloads\candidate-B-v4\candidate-B\
+     advance_report\data.py
+       1 """Загрузка выгрузки из учёта (data/*.csv) и проверка её целостн
+         ости.
+       2
+       3 Любая ошибка в данных останавливает построение отчёта: лучше не
+         дать отчёт,
+       4 чем дать отчёт с молча пропущенным платежом.
+       5 """
+       6
+       7 from __future__ import annotations
+       8
+     … +225 lines (ctrl+o to expand)
+
+● Упрощу проверку дат по статусу: ей нужны только сырые значения колонок.
+
+● Bash(cd "C:/Users/Oleg/Downloads/candidate-B-v4/candidate-B/advance_report" &&
+      python - <<'EOF'
+      from pathlib import Path…)
+  ⎿  (No output)
+
+● Теперь главное: расчёт на дату и зачёт платежей.
+
+● Write(C:\Users\Oleg\Downloads\candidate-B-v4\candidate-B\advance_report\report
+       .py)
+  ⎿  Wrote 209 lines to C:\Users\Oleg\Downloads\candidate-B-v4\candidate-B\
+     advance_report\report.py
+       1 """Отчёт на дату: сколько выплачено и сколько осталось по каждой
+          работе и договору.
+       2
+       3 Порядок расчёта по договору (подробно и с обоснованием — в DECIS
+         IONS.md):
+       4
+       5 1. Статусы работ и платежей восстанавливаются на конец дня отчёт
+         а по датам
+       6    событий, а не берутся из колонки status выгрузки.
+       7 2. Выплачено = платежи, деньги по которым ушли не позже даты отч
+     … +203 lines (~8 KB) (ctrl+o to expand)
+
+● Write(C:\Users\Oleg\Downloads\candidate-B-v4\candidate-B\advance_report\render
+       .py)
+  ⎿  Wrote 111 lines to C:\Users\Oleg\Downloads\candidate-B-v4\candidate-B\
+     advance_report\render.py
+      1 """Вывод отчёта: JSON для программ и текстовая таблица для челове
+        ка."""
+      2
+      3 from __future__ import annotations
+      4
+      5 import json
+      6 from datetime import date
+      7 from decimal import Decimal
+      8
+      9 from .money import format_date, format_money
+     … +102 lines (ctrl+o to expand)
+
+● Упрощу блок итогов: список платежей, из которых сложился незачтённый остаток,
+  выведу отдельной строкой.
+
+● Update(C:\Users\Oleg\Downloads\candidate-B-v4\candidate-B\advance_report\rende
+        r.py)
+  ⎿  Added 13 lines, removed 14 lines
+      60      )
+      61 
+      62      totals = contract["totals"]
+      63 -    advance_from = _sources_text(contract["unapplied_from"])   
+      63      summary = [
+      65 -        ["Стоимость работ без отменённых", format_money(totals[
+         -"works_due"]), ""],                                            
+      66 -        ["  из них приняты", format_money(totals["accepted"]), 
+         -""],                                                           
+      67 -        ["Выплачено", format_money(totals["paid"]), ""],       
+      68 -        ["  зачтено в работы", format_money(totals["paid_to_wor
+         -ks"]), ""],                                                    
+      69 -        ["  аванс, ещё не зачтённый в работы", format_money(tot
+         -als["advance_unapplied"]), ""],                                
+      70 -        ["  переплата", format_money(totals["overpaid"]), ""], 
+      71 -        ["Осталось оплатить по договору", format_money(totals["
+         -remaining"]), ""],                                             
+      72 -        ["  из них долг за принятые работы", format_money(total
+         -s["accepted_debt"]), ""],                                      
+      73 -        ["В очереди на оплату (не выплачено)", format_money(tot
+         -als["queued"]), ""],                                           
+      64 +        ["Стоимость работ без отменённых", totals["works_due"]]
+         +,                                                              
+      65 +        ["  из них приняты", totals["accepted"]],              
+      66 +        ["Выплачено", totals["paid"]],                         
+      67 +        ["  зачтено в работы", totals["paid_to_works"]],       
+      68 +        ["  аванс, ещё не зачтённый в работы", totals["advance_
+         +unapplied"]],                                                  
+      69 +        ["  переплата", totals["overpaid"]],                   
+      70 +        ["Осталось оплатить по договору", totals["remaining"]],
+      71 +        ["  из них долг за принятые работы", totals["accepted_d
+         +ebt"]],                                                        
+      72 +        ["В очереди на оплату (ещё не выплачено)", totals["queu
+         +ed"]],                                                         
+      73      ]
+      75 -    if advance_from:                                           
+      76 -        summary[4][2] = f"из платежей: {advance_from}" if total
+         -s["overpaid"] == 0 else ""                                     
+      77 -        summary[5][2] = "" if totals["overpaid"] == 0 else f"не
+         - зачтено из платежей: {advance_from}"                          
+      74      out += ["", f"Итоги по договору {contract['contract_id']}"]
+      79 -    out += ["  " + row for row in _table(["", "", ""], summary,
+         - right={1})[2:]]                                               
+      75 +    rows = [[label, format_money(value)] for label, value in su
+         +mmary]                                                         
+      76 +    out += ["  " + row for row in _table(["", ""], rows, right=
+         +{1})[2:]]                                                      
+      77 +    if contract["unapplied_from"]:                             
+      78 +        out.append(f"  Не зачтённые в работы деньги — из платеж
+         +ей: {_sources_text(contract['unapplied_from'])}")              
+      79 
+      80      if contract["payments"]:
+      81          payment_rows = []
+
+● Write(C:\Users\Oleg\Downloads\candidate-B-v4\candidate-B\advance_report\server
+       .py)
+  ⎿  Wrote 85 lines to C:\Users\Oleg\Downloads\candidate-B-v4\candidate-B\a
+     dvance_report\server.py
+      1 """HTTP-сервис на стандартной библиотеке.
+      2
+      3 GET /report?date=ГГГГ-ММ-ДД[&format=json|text]
+      4
+      5 Данные читаются из CSV на каждый запрос: поправили выгрузку — сле
+        дующий
+      6 запрос уже по новым данным, перезапуск не нужен.
+      7 """
+      8
+      9 from __future__ import annotations
+     … +76 lines (ctrl+o to expand)
+
+● Write(C:\Users\Oleg\Downloads\candidate-B-v4\candidate-B\advance_report\__main
+       __.py)
+  ⎿  Wrote 42 lines to C:\Users\Oleg\Downloads\candidate-B-v4\candidate-B\a
+     dvance_report\__main__.py
+       1 """Запуск: python -m advance_report [--data ПАПКА] [--host АДРЕС
+         ] [--port ПОРТ]"""
+       2
+       3 from __future__ import annotations
+       4
+       5 import argparse
+       6 import sys
+       7 from pathlib import Path
+       8
+       9 from .data import DataError, load_dataset
+     … +33 lines (ctrl+o to expand)
+
+● Bash(cd "C:/Users/Oleg/Downloads/candidate-B-v4/candidate-B" && printf
+      '"""Отчёт по оплате работ подрядчиков на дату."""\n' >
+      advance_report/__init__.py && printf ''…)
+  ⎿  (No output)
+
+● Кракозябры здесь из-за кодировки консоли, а не из-за кода. Перезапущу с
+  выводом в UTF-8.
+
+● Bash(cd "C:/Users/Oleg/Downloads/candidate-B-v4/candidate-B" &&
+      PYTHONIOENCODING=utf-8 python -c "
+      from pathlib import Path…)  ⎿  (No output)
+
+● Цифры совпали с ручным расчётом. Статус и дату в таблице платежей объединю в
+  одну колонку. · summary
+
+● Update(C:\Users\Oleg\Downloads\candidate-B-v4\candidate-B\advance_report\rende
+        r.py)
+  ⎿  Added 9 lines, removed 7 lines
+      80      if contract["payments"]:
+      81          payment_rows = []
+      82          for payment in contract["payments"]:
+      83 -            when = payment["refunded_at"] or payment["paid_at"]
+         - or payment["created_at"]                                      
+      84 -            label = {"paid": "оплачен", "queued": "заведён", "r
+         -efunded": "возвращён"}[payment["status"]]                      
+      83 +            status = PAYMENT_STATUS_TEXT[payment["status"]]    
+      84 +            if payment["status"] == "paid":                    
+      85 +                status += " " + format_date(payment["paid_at"])
+      86 +            elif payment["status"] == "refunded":              
+      87 +                status += f" {format_date(payment['refunded_at'
+         +])} (оплачен {format_date(payment['paid_at'])})"               
+      88 +            else:                                              
+      89 +                status += f" с {format_date(payment['created_at
+         +'])}"                                                          
+      90              purpose = f"{payment['work_id']}: {payment['purpose
+          ']}" if payment["work_id"] else payment["purpose"]
+      86 -            payment_rows.append([                              
+      87 -                payment["payment_id"], PAYMENT_STATUS_TEXT[paym
+         -ent["status"]], f"{label} {format_date(when)}",                
+      88 -                format_money(payment["amount"]), purpose,      
+      89 -            ])                                                 
+      91 +            payment_rows.append([payment["payment_id"], status,
+         + format_money(payment["amount"]), purpose])                    
+      92          out += ["", "Платежи на дату"]
+      91 -        out += ["  " + row for row in _table(["Платёж", "Статус
+         -", "Дата", "Сумма", "Назначение"], payment_rows, right={3})]   
+      93 +        out += ["  " + row for row in _table(["Платёж", "Статус
+         + на дату", "Сумма", "Назначение"], payment_rows, right={2})]   
+      94 
+      95      if contract["warnings"]:
+      96          out += ["", "Обратите внимание"]
+
+● Теперь тесты: на реальных данных, на синтетических крайних случаях и на HTTP.
+
+● Write(C:\Users\Oleg\Downloads\candidate-B-v4\candidate-B\tests\support.py)
+  ⎿  Wrote 33 lines to
+     C:\Users\Oleg\Downloads\candidate-B-v4\candidate-B\tests\support.py
+      1 from __future__ import annotations
+      2
+      3 import tempfile
+      4 from decimal import Decimal
+      5 from pathlib import Path
+      6
+      7 from advance_report.data import Dataset, load_dataset
+      8
+      9 REAL_DATA = Path(__file__).resolve().parent.parent / "data"
+     … +24 lines (ctrl+o to expand)
+
+● Write(C:\Users\Oleg\Downloads\candidate-B-v4\candidate-B\tests\test_data.py)
+  ⎿  Wrote 143 lines to
+     C:\Users\Oleg\Downloads\candidate-B-v4\candidate-B\tests\test_data.py
+       1 import tempfile
+       2 import unittest
+       3 from datetime import date
+       4 from decimal import Decimal
+       5 from pathlib import Path
+       6
+       7 from advance_report.data import DataError, load_dataset, natural
+         _key
+       8 from advance_report.money import format_money, parse_date, parse
+         _money
+     … +135 lines (ctrl+o to expand)
+
+● Write(C:\Users\Oleg\Downloads\candidate-B-v4\candidate-B\tests\test_report.py)
+  ⎿  Wrote 251 lines to C:\Users\Oleg\Downloads\candidate-B-v4\candidate-B\
+     tests\test_report.py
+       1 import unittest
+       2 from datetime import date, timedelta
+       3 from decimal import Decimal
+       4
+       5 from advance_report.data import load_dataset
+       6 from advance_report.money import ZERO
+       7 from advance_report.render import to_json, to_text
+       8 from advance_report.report import build_report
+       9
+      10 from .support import REAL_DATA, make_dataset, rub
+     … +241 lines (ctrl+o to expand)
+
+● Write(C:\Users\Oleg\Downloads\candidate-B-v4\candidate-B\tests\test_server.py)
+  ⎿  Wrote 99 lines to C:\Users\Oleg\Downloads\candidate-B-v4\candidate-B\t
+     ests\test_server.py
+      1 import json
+      2 import tempfile
+      3 import threading
+      4 import unittest
+      5 from pathlib import Path
+      6 from urllib.error import HTTPError
+      7 from urllib.request import urlopen
+      8
+      9 from advance_report.server import ReportServer
+     … +90 lines (ctrl+o to expand)
+
+● Bash(cd "C:/Users/Oleg/Downloads/candidate-B-v4/candidate-B" &&
+      PYTHONIOENCODING=utf-8 python -m unittest 2>&1 | tail -40)
+  ⎿  (No output)
+
+● Все 52 теста прошли с первого раза. Сейчас переделаю их на подкласс, чтобы не
+  менять метод обработчика для всего процесса. · summary
+
+● Update(C:\Users\Oleg\Downloads\candidate-B-v4\candidate-B\tests\test_server.py
+        )
+  ⎿  Added 7 lines, removed 2 lines
+       6  from urllib.error import HTTPError
+       7  from urllib.request import urlopen
+       8 
+       9 -from advance_report.server import ReportServer                 
+       9 +from advance_report.server import ReportHandler, ReportServer  
+      10 
+      11  from .support import REAL_DATA, write_csv
+      12 
+      13 
+      14 +class QuietHandler(ReportHandler):                             
+      15 +    def log_message(self, *args) -> None:                      
+      16 +        pass                                                   
+      17 +                                                               
+      18 +                                                               
+      19  class ServerTestCase(unittest.TestCase):
+      20      data_dir = REAL_DATA
+      21 
+      22      def setUp(self):
+      23          self.server = ReportServer(("127.0.0.1", 0), self.data_
+          dir)
+      19 -        self.server.RequestHandlerClass.log_message = lambda *a
+         -rgs: None  # тише в выводе тестов                              
+      24 +        self.server.RequestHandlerClass = QuietHandler         
+      25          self.thread = threading.Thread(target=self.server.serve
+          _forever, daemon=True)
+      26          self.thread.start()
+      27          self.base = f"http://127.0.0.1:{self.server.server_addr
+          ess[1]}"
+
+● Bash(cd "C:/Users/Oleg/Downloads/candidate-B-v4/candidate-B" && for py in
+      "python"
+      "C:/Users/Oleg/AppData/Local/Programs/Python/Python312/python.exe"
+      "C:/Python314/p…)
+  ⎿  (No output)
+
+● Тесты прошли на Python 3.11, 3.12 и 3.14; дальше запускаю сервис и проверяю
+  его через curl. · summary
+
+● Bash(cd "C:/Users/Oleg/Downloads/candidate-B-v4/candidate-B" &&
+      (PYTHONIOENCODING=utf-8 python -m advance_report --port 8765 >
+      "$TEMP/adv_srv.log" 2>&1 &) ; for i in…)
+  ⎿  (No output)
+
+● Сервис отвечает корректно, но строка с адресом не попала в лог из-за
+  буферизации stdout; добавлю flush=True и остановлю тестовый сервер. · summary
+
+● Update(C:\Users\Oleg\Downloads\candidate-B-v4\candidate-B\advance_report\__mai
+        n__.py)
+  ⎿  Added 2 lines, removed 2 lines
+      27 
+      28      server = ReportServer((args.host, args.port), args.data)
+      29      host, port = server.server_address[:2]
+      30 -    print(f"Данные: {args.data}")                              
+      31 -    print(f"Отчёт:  http://{host}:{port}/report?date=2026-11-10
+         -&format=text  (Ctrl+C — остановить)")                          
+      30 +    print(f"Данные: {args.data}", flush=True)                  
+      31 +    print(f"Отчёт:  http://{host}:{port}/report?date=2026-11-10
+         +&format=text  (Ctrl+C — остановить)", flush=True)              
+      32      try:
+      33          server.serve_forever()
+      34      except KeyboardInterrupt:
+
+● PowerShell($c = Get-NetTCPConnection -LocalPort 8765 -State Listen
+            -ErrorAction SilentlyContinue; if ($c) { $p = Get-Process -Id
+            $c.OwningProcess; "$($p.Id) $($p.ProcessNa…)
+  ⎿  25032 python C:\Users\Oleg\AppData\Roaming\uv\python\cpython-3.11-wind
+     ows-x86_64-none\python.exe
+     stopped
+
+● Проверю ещё запуск с неверной папкой данных: сервис должен отказаться
+  стартовать и объяснить причину.
+
+● Bash(cd "C:/Users/Oleg/Downloads/candidate-B-v4/candidate-B" &&
+      PYTHONIOENCODING=utf-8 python -m advance_report --data nowhere; echo
+      "exit=$?"; PYTHONIOENCODING=utf-…)
+  ⎿  (No output)
+
+● Код готов. Пишу документы: README и DECISIONS для проверяющих, записку для
+  бухгалтера.
+
+● Write(C:\Users\Oleg\Downloads\candidate-B-v4\candidate-B\DECISIONS.md)
+  ⎿  Wrote 116 lines to
+     C:\Users\Oleg\Downloads\candidate-B-v4\candidate-B\DECISIONS.md
+       1 # Решения и допущения
+       2
+       3 Бухгалтер недоступна, других источников, кроме `data/`, нет. Ниж
+         е — всё, что
+       4 пришлось решить самому. Последствия посчитаны для даты проверки
+         10.11.2026.
+       5
+       6 ---
+       7
+       8 **1. Статусы — на дату отчёта, а не на момент выгрузки.**
+     … +108 lines (ctrl+o to expand)
+
+● Write(C:\Users\Oleg\Downloads\candidate-B-v4\candidate-B\NOTE_TO_ACCOUNTANT.md
+       )
+  ⎿  Wrote 16 lines to C:\Users\Oleg\Downloads\candidate-B-v4\candidate-B\N
+     OTE_TO_ACCOUNTANT.md
+      1 # Записка бухгалтеру
+      2
+      3 Как читать отчёт:
+      4
+      5 1. Отчёт показывает состояние на конец выбранного дня. Принята ли
+         работа и ушли ли деньги, определяется по датам событий, а не по
+        сегодняшним статусам. Поэтому на 10.11 «Упаковка» ещё не принята,
+         а платёж P-8 от 12.11 не учтён.
+      6 2. Платежи без привязки к работе зачтены в принятые работы по оче
+        реди, начиная с принятой раньше всех. Колонка «Чем оплачено» пока
+     … +11 lines (~1 KB) (ctrl+o to expand)
+
+● Write(C:\Users\Oleg\Downloads\candidate-B-v4\candidate-B\README.md)
+  ⎿  Wrote 115 lines to
+     C:\Users\Oleg\Downloads\candidate-B-v4\candidate-B\README.md
+       1 # Отчёт по оплате работ на дату
+       2
+       3 Маленький HTTP-сервис на Python. Он читает выгрузку из `data/` и
+          строит отчёт на дату:
+       4 по каждой работе — цена, выплачено и сколько осталось оплатить;
+         по каждому договору — итоги.
+       5 Внешних зависимостей нет, только стандартная библиотека.
+       6
+       7 - Задание — [TASK.md](TASK.md), формат данных — [data/FORMAT.md]
+         (data/FORMAT.md).
+     … +108 lines (ctrl+o to expand)
+
+● Bash(cd "C:/Users/Oleg/Downloads/candidate-B-v4/candidate-B" && printf
+      '__pycache__/\n*.pyc\n.venv/\n' > .gitignore && mkdir -p transcripts &&
+      printf 'Сюда кладётся…)
+  ⎿  (No output)
+● Перед коммитом проверю модули на неиспользуемые импорты.
+
+● Bash(cd "C:/Users/Oleg/Downloads/candidate-B-v4/candidate-B" && python -
+      <<'EOF'
+      import ast, pathlib, re…)
+  ⎿  (No output)
+
+● Update(C:\Users\Oleg\Downloads\candidate-B-v4\candidate-B\tests\test_report.py
+        )
+  ⎿  Removed 1 line
+      1  import unittest
+      2  from datetime import date, timedelta
+      3 -from decimal import Decimal                                     
+      3 
+      4  from advance_report.data import load_dataset
+      5  from advance_report.money import ZERO
+
+● Bash(cd "C:/Users/Oleg/Downloads/candidate-B-v4/candidate-B" &&
+      PYTHONIOENCODING=utf-8 python -m unittest 2>&1 | tail -2 && find . -name
+      __pycache__ -type d -exec rm…)
+  ⎿  (No output)
+
+● Git жалуется на переводы строк: в CSV из выгрузки они CRLF. Добавлю
+  .gitattributes, чтобы данные хранились байт в байт, и сделаю коммит. · summary
+
+● Bash(cd "C:/Users/Oleg/Downloads/candidate-B-v4/candidate-B" && printf
+      'data/*.csv -text\n' > .gitattributes && git rm -q --cached data/*.csv &&
+      git add -A && git co…)
+  ⎿  (No output)
+
+● Всё сделано: сервис, 52 теста, DECISIONS.md, записка бухгалтеру и README с
+  инструкцией по запуску. Всё лежит в
+  C:\Users\Oleg\Downloads\candidate-B-v4\candidate-B. Там сделан git init и один
+  коммит в ветке main. Тесты проходят на Python 3.11, 3.12, 3.14 и в чистом
+  клоне репозитория. Сервис я тоже запускал и проверял через curl.
+
+  Запуск:
+  python -m advance_report
+  curl.exe "http://127.0.0.1:8000/report?date=2026-11-10&format=text"
+  Без format=text сервис отдаёт JSON. Тесты: python -m unittest.
+
+  Отчёт на 10.11.2026:
+
+  ┌─────────┬───────────────┬───────────┬────────────┬──────────┬──────────┐
+  │ Договор │   Работы к    │ Выплачено │  из них    │ Осталось │    В     │
+  │         │    оплате     │           │   аванс    │          │ очереди  │
+  ├─────────┼───────────────┼───────────┼────────────┼──────────┼──────────┤
+  │ D-1     │       500 000 │   315 000 │     15 000 │  185 000 │  150 000 │
+  ├─────────┼───────────────┼───────────┼────────────┼──────────┼──────────┤
+  │ D-2     │        90 000 │    75 000 │     25 000 │   15 000 │        0 │
+  └─────────┴───────────────┴───────────┴────────────┴──────────┴──────────┘
+
+  Ловушки в данных и как я их решил:
+  - Статусы в выгрузке даны на момент выгрузки, а не на 10.11. Программа
+    восстанавливает их по датам событий. Поэтому W-23 (принята 11.11) на 10.11
+    ещё не принята, а платёж P-8 (12.11) не учтён.
+  - Возврат и очередь. P-2 вернули 10.09, поэтому он не считается выплаченным.
+    P-4 стоит в очереди и тоже не считается, он показан отдельной строкой.
+  - Платежи без привязки к работе. Они закрывают принятые работы по очереди,
+    начиная с самой ранней. Колонка «Чем оплачено» показывает, какой платёж
+    закрыл какую работу. Что осталось — это аванс, он записан на договор, а не
+    на отдельные будущие работы.
+  - Отменённая работа W-13. «Осталось оплатить» считается от стоимости работ
+    (500 000), а не от суммы договора (600 000). Если сумма договора не
+    уменьшилась, остаток будет 285 000, это вопрос в записке.
+  - P-3 «Материалы» к W-14 считается частью цены работы.
+  - Переплата по D-2. После 12.11 выплачено 95 000 при договоре на 90 000. Отчёт
+    на эту дату показывает переплату 5 000 и предупреждение.
+
+  По каждому решению в DECISIONS.md записано, что изменится в отчёте, если оно
+  окажется неверным.
+
+  Что осталось сделать тебе:
+  1. Выгрузить транскрипт командой /export и положить его в папку transcripts/
+     без правок. Я этого сделать не могу. README уже ссылается на эту папку.
+  2. Сделать репозиторий на GitHub приватным: в задании прямо сказано не
+     публиковать задание, данные и решение.
+
+  Исходный README задания я переименовал в TASK.md, а на его месте теперь README
+  решения.
+
+  Файлы:
+  - README.md (C:/Users/Oleg/Downloads/candidate-B-v4/candidate-B/README.md)
+  - DECISIONS.md
+    (C:/Users/Oleg/Downloads/candidate-B-v4/candidate-B/DECISIONS.md)
+  - NOTE_TO_ACCOUNTANT.md
+    (C:/Users/Oleg/Downloads/candidate-B-v4/candidate-B/NOTE_TO_ACCOUNTANT.md)
+  - report.py (C:/Users/Oleg/Downloads/candidate-B-v4/candidate-B/advance_report
+    /report.py)
+
+> Выглядит не плохо, но как будто бы просто HTML страница, давай сделаем дизайн
+  для этого. Напши фронт на React. В модерновом оформлении
+
+● Сделаю. Сначала загружу скилл по дизайну интерфейсов и проверю окружение:
+  Node, npm, свободное место на диске.
+
+● Skill(frontend-design)
+  ⎿  Loaded skill
+
+● PowerShell(node --version; npm --version; Get-PSDrive C | Select-Object
+            @{n='FreeGB';e={[math]::Round($_.Free/1GB,1)}}; Test-Path
+            "C:\Program Files (x86)\Microsoft\Edge\Ap…)
+  ⎿  v24.15.0
+     11.19.0
+     … +45 lines (ctrl+o to expand)
+
+● Это продуктовый финансовый отчёт, поэтому выбираю стиль Refined Minimal.
+  Сейчас читаю соответствующие справочники скилла. · summary
+
+● Bash(cd "C:/Users/Oleg/.claude/skills/frontend-design" && wc -l *.md && sed -n
+      '1,200p' minimal-ui-patterns.md)
+  ⎿  (No output)
+
+● Для финансового отчёта бухгалтера лучше всего подходит подстиль Mercury,
+  спокойное банковское оформление. Сейчас прочитаю его раздел и чек-лист.
+  · summary
+
+● Bash(cd "C:/Users/Oleg/.claude/skills/frontend-design" && awk '/^## 5\.
+      Mercury/,/^## 6\./' minimal-ui-patterns.md && echo ======= && sed -n
+      '1,174p' checklist.md)
+  ⎿  (No output)
+
+● Выбрал направление Mercury: строгий банковский минимализм с тёмно-зелёным
+  акцентом, Inter для интерфейса и засечным шрифтом для дат и сумм. Сейчас
+  проверю доступные версии пакетов в npm. · summary
+
+● Bash(cd "$TEMP" && for p in react react-dom vite @vitejs/plugin-react
+      typescript @types/react @types/react-dom @fontsource-variable/inter
+      @fontsource-variable/source…)
+  ⎿  No matches found
+
+● Пакеты на месте. Сначала бэкенд: добавлю в API итог по договорам и научу
+  сервер отдавать собранный фронт на /, при этом /report остаётся API. · summary
+
+● Update(C:\Users\Oleg\Downloads\candidate-B-v4\candidate-B\advance_report\repor
+        t.py)
+  ⎿  Added 14 lines, removed 5 lines
+      74      return sum(values, ZERO)
+      75 
+      76 
+      77 +TOTAL_KEYS = (                                                 
+      78 +    "works_due", "accepted", "paid", "paid_to_works", "advance_
+         +unapplied",                                                    
+      79 +    "overpaid", "accepted_debt", "queued", "remaining",        
+      80 +)                                                              
+      81 +                                                               
+      82 +                                                               
+      83  def build_report(data: Dataset, day: date) -> dict:
+      78 -    contracts = sorted(data.contracts.values(), key=lambda c: n
+         -atural_key(c.contract_id))                                     
+      79 -    return {                                                   
+      80 -        "report_date": day,                                    
+      81 -        "contracts": [_contract_report(data, contract, day) for
+         - contract in contracts if contract.signed_at <= day],          
+      82 -    }                                                          
+      84 +    signed = sorted(                                           
+      85 +        (contract for contract in data.contracts.values() if co
+         +ntract.signed_at <= day),                                      
+      86 +        key=lambda contract: natural_key(contract.contract_id),
+      87 +    )                                                          
+      88 +    contracts = [_contract_report(data, contract, day) for cont
+         +ract in signed]                                                
+      89 +    # Итог — сумма итогов договоров: переплата по одному догово
+         +ру не уменьшает долг по другому.                               
+      90 +    totals = {key: _total(contract["totals"][key] for contract 
+         +in contracts) for key in TOTAL_KEYS}                           
+      91 +    return {"report_date": day, "contracts": contracts, "totals
+         +": totals}                                                     
+      92 
+      93 
+      94  def _contract_report(data: Dataset, contract: Contract, day: da
+          te) -> dict:
+
+● Update(C:\Users\Oleg\Downloads\candidate-B-v4\candidate-B\advance_report\rende
+        r.py)
+  ⎿  Added 11 lines
+      109          out += ["", "На эту дату нет подписанных договоров."]
+      110      for contract in report["contracts"]:
+      111          out += ["", "=" * 100, "", *_contract_text(contract)]
+      112 +    if len(report["contracts"]) > 1:                          
+      113 +        totals = report["totals"]                             
+      114 +        rows = [                                              
+      115 +            ["Выплачено", totals["paid"]],                    
+      116 +            ["Осталось оплатить", totals["remaining"]],       
+      117 +            ["  из них долг за принятые работы", totals["accep
+          +ted_debt"]],                                                  
+      118 +            ["В очереди на оплату", totals["queued"]],        
+      119 +            ["Переплата", totals["overpaid"]],                
+      120 +        ]                                                     
+      121 +        out += ["", "=" * 100, "", "Итого по всем договорам"] 
+      122 +        out += ["  " + row for row in _table(["", ""], [[label
+          +, format_money(value)] for label, value in rows], right={1})[2
+          +:]]                                                           
+      123      return "\n".join(out) + "\n"
+
+● Write(C:\Users\Oleg\Downloads\candidate-B-v4\candidate-B\advance_report\server
+       .py)
+  ⎿  Added 45 lines, removed 13 lines
+      1  """HTTP-сервис на стандартной библиотеке.
+      2 
+      3 -GET /report?date=ГГГГ-ММ-ДД[&format=json|text]                  
+      3 +GET /report?date=ГГГГ-ММ-ДД[&format=json|text]   отчёт          
+      4 +GET /                                           веб-интерфейс (с
+        +обранный web/ в static/)                                        
+      5 
+      6  Данные читаются из CSV на каждый запрос: поправили выгрузку — сл
+         едующий
+      7  запрос уже по новым данным, перезапуск не нужен.
+     ...
+      13  from http import HTTPStatus
+      14  from http.server import BaseHTTPRequestHandler, ThreadingHTTPSe
+          rver
+      15  from pathlib import Path
+      15 -from urllib.parse import parse_qs, urlsplit                    
+      16 +from urllib.parse import parse_qs, unquote, urlsplit           
+      17 
+      18  from .data import DataError, load_dataset
+      19  from .money import parse_date
+      20  from .render import to_json, to_text
+      21  from .report import build_report
+      22 
+      23 +STATIC_DIR = Path(__file__).resolve().parent / "static"        
+      24 +                                                               
+      25 +# Явная таблица типов: на Windows mimetypes берёт их из реестра
+         +, и .js бывает text/plain —                                    
+      26 +# тогда браузер отказывается запускать модуль.                 
+      27 +STATIC_TYPES = {                                               
+      28 +    ".html": "text/html; charset=utf-8",                       
+      29 +    ".js": "text/javascript; charset=utf-8",                   
+      30 +    ".css": "text/css; charset=utf-8",                         
+      31 +    ".svg": "image/svg+xml",                                   
+      32 +    ".woff2": "font/woff2",                                    
+      33 +    ".woff": "font/woff",                                      
+      34 +    ".png": "image/png",                                       
+      35 +    ".ico": "image/x-icon",                                    
+      36 +}                                                              
+      37 +                                                               
+      38  USAGE = """Отчёт по оплате работ на дату.
+      39 
+      40    GET /report?date=2026-11-10              JSON
+      41    GET /report?date=2026-11-10&format=text  таблица для чтения г
+          лазами
+      42 +                                                               
+      43 +Веб-интерфейс не собран: cd web && npm install && npm run build
+      44  """
+      45 
+      46 
+      47  class ReportServer(ThreadingHTTPServer):
+      48      daemon_threads = True
+      49 
+      32 -    def __init__(self, address: tuple[str, int], data_dir: Path
+         -):                                                             
+      50 +    def __init__(self, address: tuple[str, int], data_dir: Path
+         +, static_dir: Path = STATIC_DIR):                              
+      51          super().__init__(address, ReportHandler)
+      52          self.data_dir = Path(data_dir)
+      53 +        self.static_dir = Path(static_dir).resolve()           
+      54 
+      55 
+      56  class ReportHandler(BaseHTTPRequestHandler):
+     ...
+      58 
+      59      def do_GET(self) -> None:
+      60          url = urlsplit(self.path)
+      42 -        if url.path == "/":                                    
+      43 -            self._send(HTTPStatus.OK, USAGE, "text/plain")     
+      44 -        elif url.path == "/report":                            
+      61 +        if url.path == "/report":                              
+      62              self._report(parse_qs(url.query))
+      46 -        else:                                                  
+      63 +        elif url.path == "/" and not (self.server.static_dir / 
+         +"index.html").is_file():                                       
+      64 +            self._send(HTTPStatus.OK, USAGE.encode("utf-8"), "t
+         +ext/plain; charset=utf-8")                                     
+      65 +        elif not self._static(url.path):                       
+      66              self._error(HTTPStatus.NOT_FOUND, f"Нет такого адре
+          са: {url.path}. Отчёт — /report?date=ГГГГ-ММ-ДД")
+      67 
+      68      def _report(self, params: dict[str, list[str]]) -> None:
+     ...
+       85              return
+       86          report = build_report(data, day)
+       87          if output == "text":
+       69 -            self._send(HTTPStatus.OK, to_text(report), "text/p
+          -lain")                                                        
+       88 +            self._send(HTTPStatus.OK, to_text(report).encode("
+          +utf-8"), "text/plain; charset=utf-8")                         
+       89          else:
+       71 -            self._send(HTTPStatus.OK, to_json(report), "applic
+          -ation/json")                                                  
+       90 +            self._send(HTTPStatus.OK, to_json(report).encode("
+          +utf-8"), "application/json; charset=utf-8")                   
+       91 
+       92 +    def _static(self, path: str) -> bool:                     
+       93 +        """Отдать файл фронта. Только из static/, только извес
+          +тных типов."""                                                
+       94 +        root = self.server.static_dir                         
+       95 +        relative = unquote(path).lstrip("/") or "index.html"  
+       96 +        target = (root / relative).resolve()                  
+       97 +        if root not in target.parents or not target.is_file() 
+          +or target.suffix not in STATIC_TYPES:                         
+       98 +            return False                                      
+       99 +        # Файлы в assets/ с хешем в имени не меняются — их мож
+          +но кешировать навсегда.                                       
+      100 +        cache = "public, max-age=31536000, immutable" if targe
+          +t.parent == root / "assets" else "no-cache"                   
+      101 +        self._send(HTTPStatus.OK, target.read_bytes(), STATIC_
+          +TYPES[target.suffix], cache)                                  
+      102 +        return True                                           
+      103 +                                                              
+      104      def _error(self, status: HTTPStatus, message: str, problem
+           s: list[str] | None = None) -> None:
+      105          body = {"error": message}
+      106          if problems:
+      107              body["problems"] = problems
+       77 -        self._send(status, json.dumps(body, ensure_ascii=False
+          -, indent=2), "application/json")                              
+      108 +        payload = json.dumps(body, ensure_ascii=False, indent=
+          +2).encode("utf-8")                                            
+      109 +        self._send(status, payload, "application/json; charset
+          +=utf-8")                                                      
+      110 
+       79 -    def _send(self, status: HTTPStatus, body: str, content_typ
+          -e: str) -> None:                                              
+       80 -        payload = body.encode("utf-8")                        
+      111 +    def _send(self, status: HTTPStatus, payload: bytes, conten
+          +t_type: str, cache: str = "no-store") -> None:                
+      112          self.send_response(status)
+       82 -        self.send_header("Content-Type", f"{content_type}; cha
+          -rset=utf-8")                                                  
+      113 +        self.send_header("Content-Type", content_type)        
+      114          self.send_header("Content-Length", str(len(payload)))
+      115 +        self.send_header("Cache-Control", cache)              
+      116          self.end_headers()
+      117          self.wfile.write(payload)
+
+● Я добавлю защиту раздачи статики от путей с нулевым байтом: такие запросы
+  будут возвращать 404, а не приводить к падению. · summary
+
+● Update(C:\Users\Oleg\Downloads\candidate-B-v4\candidate-B\advance_report\serve
+        r.py)
+  ⎿  Added 5 lines, removed 2 lines
+       93          """Отдать файл фронта. Только из static/, только извес
+           тных типов."""
+       94          root = self.server.static_dir
+       95          relative = unquote(path).lstrip("/") or "index.html"
+       96 -        target = (root / relative).resolve()                  
+       97 -        if root not in target.parents or not target.is_file() 
+          -or target.suffix not in STATIC_TYPES:                         
+       96 +        try:                                                  
+       97 +            target = (root / relative).resolve()              
+       98 +            if root not in target.parents or not target.is_fil
+          +e() or target.suffix not in STATIC_TYPES:                     
+       99 +                return False                                  
+      100 +        except (OSError, ValueError):  # нулевой байт, недопус
+          +тимое имя файла                                               
+      101              return False
+      102          # Файлы в assets/ с хешем в имени не меняются — их мож
+           но кешировать навсегда.
+      103          cache = "public, max-age=31536000, immutable" if targe
+           t.parent == root / "assets" else "no-cache"
+
+● Теперь тесты для статики и общего итога.
+
+● Write(C:\Users\Oleg\Downloads\candidate-B-v4\candidate-B\tests\test_server.py)
+  ⎿  Added 60 lines, removed 11 lines
+      1 +import http.client                                              
+      2  import json
+      3  import tempfile
+      4  import threading
+     ...
+      21      data_dir = REAL_DATA
+      22 
+      23      def setUp(self):
+      23 -        self.server = ReportServer(("127.0.0.1", 0), self.data_
+         -dir)                                                           
+      24 +        self.tmp = tempfile.TemporaryDirectory()               
+      25 +        self.root = Path(self.tmp.name)                        
+      26 +        self.static_dir = self.root / "static"                 
+      27 +        self.static_dir.mkdir()                                
+      28 +        self.prepare()                                         
+      29 +        self.server = ReportServer(("127.0.0.1", 0), self.data_
+         +dir, self.static_dir)                                          
+      30          self.server.RequestHandlerClass = QuietHandler
+      31          self.thread = threading.Thread(target=self.server.serve
+          _forever, daemon=True)
+      32          self.thread.start()
+      27 -        self.base = f"http://127.0.0.1:{self.server.server_addr
+         -ess[1]}"                                                       
+      33 +        self.port = self.server.server_address[1]              
+      34 +        self.base = f"http://127.0.0.1:{self.port}"            
+      35 
+      36 +    def prepare(self) -> None:                                 
+      37 +        """Подготовить файлы до старта сервера."""             
+      38 +                                                               
+      39      def tearDown(self):
+      40          self.server.shutdown()
+      41          self.server.server_close()
+      42          self.thread.join()
+      43 +        self.tmp.cleanup()                                     
+      44 
+      45      def get(self, path: str):
+      46          try:
+     ...
+      49          except HTTPError as error:
+      50              return error.code, error.headers.get("Content-Type"
+          ), error.read().decode("utf-8")
+      51 
+      52 +    def raw_status(self, path: str) -> int:                    
+      53 +        """Запрос с путём как есть: urllib сам схлопывает '..'.
+         +"""                                                            
+      54 +        connection = http.client.HTTPConnection("127.0.0.1", se
+         +lf.port, timeout=5)                                            
+      55 +        try:                                                   
+      56 +            connection.request("GET", path)                    
+      57 +            return connection.getresponse().status             
+      58 +        finally:                                               
+      59 +            connection.close()                                 
+      60 
+      61 +                                                               
+      62  class ReportEndpointTest(ServerTestCase):
+      63      def test_json_report(self):
+      64          status, content_type, body = self.get("/report?date=202
+          6-11-10")
+     ...
+      67          report = json.loads(body)
+      68          self.assertEqual(report["report_date"], "2026-11-10")
+      69          self.assertEqual([c["totals"]["remaining"] for c in rep
+          ort["contracts"]], ["185000.00", "15000.00"])
+      70 +        self.assertEqual(report["totals"]["remaining"], "200000
+         +.00")                                                          
+      71 
+      72      def test_text_report(self):
+      73          status, content_type, body = self.get("/report?date=202
+          6-11-10&format=text")
+     ...
+      75          self.assertEqual(content_type, "text/plain; charset=utf
+          -8")
+      76          self.assertIn("Договор D-1 — Студия «Свет»", body)
+      77 
+      57 -    def test_usage_page(self):                                 
+      78 +    def test_usage_page_without_built_frontend(self):          
+      79          status, _, body = self.get("/")
+      80          self.assertEqual(status, 200)
+      81          self.assertIn("/report?date=", body)
+      82 +        self.assertIn("npm run build", body)                   
+      83 
+      84      def test_date_is_required(self):
+      85          status, _, body = self.get("/report")
+     ...
+      100          self.assertEqual(status, 404)
+      101 
+      102 
+      103 +class StaticFilesTest(ServerTestCase):                        
+      104 +    def prepare(self):                                        
+      105 +        (self.static_dir / "index.html").write_text("<!doctype
+          + html><title>Отчёт</title>", encoding="utf-8")                
+      106 +        (self.static_dir / "assets").mkdir()                  
+      107 +        (self.static_dir / "assets" / "app-1a2b.js").write_tex
+          +t("console.log(1)", encoding="utf-8")                         
+      108 +        (self.static_dir / "notes.md").write_text("не для разд
+          +ачи", encoding="utf-8")                                       
+      109 +        (self.root / "secret.js").write_text("секрет", encodin
+          +g="utf-8")                                                    
+      110 +                                                              
+      111 +    def test_index_is_served_at_root(self):                   
+      112 +        status, content_type, body = self.get("/")            
+      113 +        self.assertEqual(status, 200)                         
+      114 +        self.assertEqual(content_type, "text/html; charset=utf
+          +-8")                                                          
+      115 +        self.assertIn("<title>Отчёт</title>", body)           
+      116 +                                                              
+      117 +    def test_asset_has_js_type_and_long_cache(self):          
+      118 +        with urlopen(self.base + "/assets/app-1a2b.js", timeou
+          +t=5) as response:                                             
+      119 +            self.assertEqual(response.headers["Content-Type"],
+          + "text/javascript; charset=utf-8")                            
+      120 +            self.assertIn("immutable", response.headers["Cache
+          +-Control"])                                                   
+      121 +                                                              
+      122 +    def test_api_still_works_next_to_frontend(self):          
+      123 +        status, _, body = self.get("/report?date=2026-11-10") 
+      124 +        self.assertEqual(status, 200)                         
+      125 +        self.assertEqual(json.loads(body)["totals"]["paid"], "
+          +390000.00")                                                   
+      126 +                                                              
+      127 +    def test_unknown_file_types_are_not_served(self):         
+      128 +        self.assertEqual(self.get("/notes.md")[0], 404)       
+      129 +                                                              
+      130 +    def test_path_traversal_is_blocked(self):                 
+      131 +        for path in ["/../secret.js", "/%2e%2e/secret.js", "/a
+          +ssets/..%2f..%2fsecret.js", "/..%5csecret.js", "/a%00.js"]:   
+      132 +            with self.subTest(path=path):                     
+      133 +                self.assertEqual(self.raw_status(path), 404)  
+      134 +                                                              
+      135 +                                                              
+      136  class BrokenDataTest(ServerTestCase):
+       82 -    def setUp(self):                                          
+       83 -        self.tmp = tempfile.TemporaryDirectory()              
+      137 +    def prepare(self):                                        
+      138          self.data_dir = write_csv(
+       85 -            Path(self.tmp.name),                              
+      139 +            self.root,                                        
+      140              contracts="D-1,Подрядчик,100.00,2026-01-01",
+      141              payments="P-1,D-9,,Аванс,10.00,paid,2026-02-01,202
+           6-02-01,",
+      142          )
+       89 -        super().setUp()                                       
+      143 
+       91 -    def tearDown(self):                                       
+       92 -        super().tearDown()                                    
+       93 -        self.tmp.cleanup()                                    
+       94 -                                                              
+      144      def test_data_errors_are_reported_not_hidden(self):
+      145          status, _, body = self.get("/report?date=2026-11-10")
+      146          self.assertEqual(status, 500)
+
+● Update(C:\Users\Oleg\Downloads\candidate-B-v4\candidate-B\tests\test_report.py
+        )  ⎿  Added 18 lines
+       87          d2 = contract(self.report, "D-2")
+       88          self.assertNotIn("P-8", {p["payment_id"] for p in d2["
+           payments"]})  # заведён только 12.11
+       89 
+       90 +    def test_report_totals_are_sums_of_contract_totals(self): 
+       91 +        self.assertEqual(totals(self.report), {               
+       92 +            "works_due": "590000.00",                         
+       93 +            "accepted": "350000.00",                          
+       94 +            "paid": "390000.00",                              
+       95 +            "paid_to_works": "350000.00",                     
+       96 +            "advance_unapplied": "40000.00",                  
+       97 +            "overpaid": "0.00",                               
+       98 +            "accepted_debt": "0.00",                          
+       99 +            "queued": "150000.00",                            
+      100 +            "remaining": "200000.00",                         
+      101 +        })                                                    
+      102 +                                                              
+      103 +    def test_overpayment_on_one_contract_does_not_reduce_debt_
+          +on_another(self):                                             
+      104 +        report = build_report(REAL, date(2026, 11, 12))       
+      105 +        self.assertEqual(report["totals"]["overpaid"], rub("50
+          +00.00"))                                                      
+      106 +        self.assertEqual(report["totals"]["remaining"], contra
+          +ct(report, "D-1")["totals"]["remaining"])                     
+      107 +                                                              
+      108      def test_warnings(self):
+      109          d1 = contract(self.report, "D-1")
+      110          self.assertEqual(len(d1["warnings"]), 2)
+
+● Bash(cd "C:/Users/Oleg/Downloads/candidate-B-v4/candidate-B" &&
+      PYTHONIOENCODING=utf-8 python -m unittest 2>&1 | tail -15)
+  ⎿  (No output)
+
+● Бэкенд готов, 59 тестов проходят. Теперь фронт: заведу проект в web/ и
+  поставлю зависимости.
+
+● Bash(mkdir -p
+      "C:/Users/Oleg/Downloads/candidate-B-v4/candidate-B/web/src/components" &&
+      cd "C:/Users/Oleg/Downloads/candidate-B-v4/candidate-B/web" && cat >
+      package…)
+  ⎿  (No output)
+  ⎿  (timeout 5m)
+
+● Обе гарнитуры поддерживают кириллицу. Посмотрю, как подключаются их CSS-файлы.
+
+● Bash(cd "C:/Users/Oleg/Downloads/candidate-B-v4/candidate-B/web/node_modules/@
+      fontsource-variable" && ls inter/*.css source-serif-4/*.css && head -12
+      source-serif-4/…)
+  ⎿  (No output)
+
+● Шрифты подключены по одному файлу на каждый, кириллица включена. Ставлю типы
+  Node для тестов форматирования и пишу конфиги. · summary
+
+● Bash(cd "C:/Users/Oleg/Downloads/candidate-B-v4/candidate-B/web" && npm view
+      @types/node@24 version 2>/dev/null | tail -1)
+  ⎿  (No output)
+
+● Bash(cd "C:/Users/Oleg/Downloads/candidate-B-v4/candidate-B/web" && npm
+      install --save-exact --save-dev @types/node@24.19.2 2>&1 | tail -1 && cat
+      package.json)
+  ⎿  (No output)
+
+● Write(C:\Users\Oleg\Downloads\candidate-B-v4\candidate-B\web\tsconfig.json)
+  ⎿  Wrote 20 lines to
+     C:\Users\Oleg\Downloads\candidate-B-v4\candidate-B\web\tsconfig.json
+       1 {
+       2   "compilerOptions": {
+       3     "target": "ES2022",
+       4     "lib": ["ES2022", "DOM", "DOM.Iterable"],
+       5     "module": "ESNext",
+       6     "moduleResolution": "bundler",
+       7     "jsx": "react-jsx",
+       8     "types": ["vite/client", "node"],
+       9     "strict": true,
+      10     "noEmit": true,
+     … +10 lines (ctrl+o to expand)
+
+● Write(C:\Users\Oleg\Downloads\candidate-B-v4\candidate-B\web\vite.config.ts)
+  ⎿  Wrote 15 lines to
+     C:\Users\Oleg\Downloads\candidate-B-v4\candidate-B\web\vite.config.ts
+       1 import react from '@vitejs/plugin-react';
+       2 import { defineConfig } from 'vite';
+       3
+       4 // Сборка кладётся в пакет Python: сервис отдаёт её сам, Node дл
+         я запуска не нужен.
+       5 export default defineConfig({
+       6   plugins: [react()],
+       7   build: {
+       8     outDir: '../advance_report/static',
+       9     emptyOutDir: true,
+     … +6 lines (ctrl+o to expand)
+
+● Write(C:\Users\Oleg\Downloads\candidate-B-v4\candidate-B\web\index.html)
+  ⎿  Wrote 18 lines to
+     C:\Users\Oleg\Downloads\candidate-B-v4\candidate-B\web\index.html
+       1 <!doctype html>
+       2 <html lang="ru">
+       3   <head>
+       4     <meta charset="utf-8" />
+       5     <meta name="viewport" content="width=device-width, initial-s
+         cale=1" />
+       6     <meta name="color-scheme" content="light dark" />
+       7     <meta name="description" content="Сколько выплачено и скольк
+         о осталось оплатить по каждой работе и договору на выбранную дат
+         у." />
+     … +11 lines (ctrl+o to expand)
+
+● Сейчас займусь логикой фронта: форматированием денег и дат и клиентом API, а
+  деньги буду считать в копейках через BigInt, без float. · summary
+
+● Write(C:\Users\Oleg\Downloads\candidate-B-v4\candidate-B\web\src\money.ts)
+  ⎿  Wrote 111 lines to
+     C:\Users\Oleg\Downloads\candidate-B-v4\candidate-B\web\src\money.ts
+       1 // Деньги приходят из API строками "185000.00". Считаем в копейк
+         ах через BigInt —
+       2 // без float, как и на сервере. Нужно это только для полосы опла
+         ты и знаков.
+       3
+       4 export type Money = string;
+       5 export type IsoDate = string;
+       6
+       7 const NBSP = ' ';
+       8 const MINUS = '−';
+     … +103 lines (ctrl+o to expand)
+
+● Write(C:\Users\Oleg\Downloads\candidate-B-v4\candidate-B\web\src\money.test.ts
+       )
+  ⎿  Wrote 68 lines to C:\Users\Oleg\Downloads\candidate-B-v4\candidate-B\w
+     eb\src\money.test.ts
+       1 import assert from 'node:assert/strict';
+       2 import { test } from 'node:test';
+       3
+       4 import {
+       5   barSegments, formatDate, formatLongDate, formatMoney, isIsoDat
+         e, plural, shiftDate, toKopecks, todayIso,
+       6 } from './money.ts';
+       7
+       8 const NBSP = ' ';
+       9
+     … +59 lines (ctrl+o to expand)
+
+● Write(C:\Users\Oleg\Downloads\candidate-B-v4\candidate-B\web\src\api.ts)
+  ⎿  Wrote 99 lines to
+     C:\Users\Oleg\Downloads\candidate-B-v4\candidate-B\web\src\api.ts
+       1 import type { IsoDate, Money } from './money.ts';
+       2
+       3 // Форма ответа GET /report — см. README.md, раздел «API».
+       4
+       5 export interface PaymentSource {
+       6   payment_id: string;
+       7   amount: Money;
+       8 }
+       9
+      10 export type WorkStatus = 'done' | 'planned' | 'cancelled';
+     … +89 lines (ctrl+o to expand)
+
+● Теперь займусь компонентами: иконками, статусами, выбором даты, сводкой,
+  разделом договора и состояниями загрузки, ошибок и пустого отчёта. · summary
+
+● Write(C:\Users\Oleg\Downloads\candidate-B-v4\candidate-B\web\src\components\Ic
+       ons.tsx)
+  ⎿  Wrote 52 lines to C:\Users\Oleg\Downloads\candidate-B-v4\candidate-B\w
+     eb\src\components\Icons.tsx
+       1 // Один набор иконок: 16×16, линия 1.5, скруглённые концы.
+       2
+       3 interface IconProps {
+       4   className?: string;
+       5 }
+       6
+       7 function Icon({ className, children }: IconProps & { children: R
+         eact.ReactNode }) {
+       8   return (
+       9     <svg
+     … +43 lines (ctrl+o to expand)
+
+● Write(C:\Users\Oleg\Downloads\candidate-B-v4\candidate-B\web\src\components\St
+       atus.tsx)
+  ⎿  Wrote 40 lines to C:\Users\Oleg\Downloads\candidate-B-v4\candidate-B\w
+     eb\src\components\Status.tsx
+       1 import type { PaymentLine, WorkLine } from '../api.ts';
+       2 import { formatDate } from '../money.ts';
+       3
+       4 type Tone = 'done' | 'planned' | 'cancelled' | 'queued' | 'refun
+         ded';
+       5
+       6 function Badge({ tone, children }: { tone: Tone; children: React
+         .ReactNode }) {
+       7   return (
+       8     <span className={`status status--${tone}`}>
+     … +32 lines (ctrl+o to expand)
+
+● Write(C:\Users\Oleg\Downloads\candidate-B-v4\candidate-B\web\src\components\Da
+       teControl.tsx)
+  ⎿  Wrote 35 lines to C:\Users\Oleg\Downloads\candidate-B-v4\candidate-B\w
+     eb\src\components\DateControl.tsx
+       1 import { shiftDate, todayIso, type IsoDate } from '../money.ts';
+       2 import { ChevronLeft, ChevronRight } from './Icons.tsx';
+       3
+       4 interface Props {
+       5   value: IsoDate;
+       6   onChange: (value: IsoDate) => void;
+       7 }
+       8
+       9 export function DateControl({ value, onChange }: Props) {
+      10   const today = todayIso();
+     … +25 lines (ctrl+o to expand)
+
+● Write(C:\Users\Oleg\Downloads\candidate-B-v4\candidate-B\web\src\components\Su
+       mmary.tsx)
+  ⎿  Wrote 52 lines to C:\Users\Oleg\Downloads\candidate-B-v4\candidate-B\w
+     eb\src\components\Summary.tsx
+       1 import type { Report } from '../api.ts';
+       2 import { formatLongDate, formatRub, isZero, plural } from '../mo
+         ney.ts';
+       3
+       4 export function Summary({ report }: { report: Report }) {
+       5   const { totals } = report;
+       6   const works = report.contracts.reduce((count, contract) => cou
+         nt + contract.works.length, 0);
+       7   const debtFree = isZero(totals.accepted_debt);
+       8
+     … +44 lines (ctrl+o to expand)
+
+● В двух компонентах React.ReactNode используется без импорта, поэтому добавляю
+  явный импорт ReactNode. · summary
+
+● Bash(cd
+      "C:/Users/Oleg/Downloads/candidate-B-v4/candidate-B/web/src/components" &&
+      sed -i '1s|^|import type { ReactNode } from '"'"'react'"'"';\n\n|'
+      Icons.tsx Statu…)
+  ⎿  (No output)
+
+● Теперь займусь центральным компонентом: разделом договора с полосой оплаты,
+  таблицей работ, итогами и платежами. Наведение на платёж будет подсвечивать
+  закрытые им работы. · summary
+● Write(C:\Users\Oleg\Downloads\candidate-B-v4\candidate-B\web\src\components\Co
+       ntract.tsx)
+  ⎿  Wrote 253 lines to C:\Users\Oleg\Downloads\candidate-B-v4\candidate-B\
+     web\src\components\Contract.tsx
+       1 import { useState, type CSSProperties } from 'react';
+       2
+       3 import type { ContractReport, PaymentSource, Totals, WorkLine }
+         from '../api.ts';
+       4 import { barSegments, formatDate, formatMoney, formatRub, isZero
+         , type BarPart, type Money } from '../money.ts';
+       5 import { Alert } from './Icons.tsx';
+       6 import { PaymentStatus, WorkStatus } from './Status.tsx';
+       7
+       8 // Наведение на платёж подсвечивает работы, которые он закрыл, и
+     … +246 lines (~9 KB) (ctrl+o to expand)
+
+● Write(C:\Users\Oleg\Downloads\candidate-B-v4\candidate-B\web\src\components\St
+       ates.tsx)
+  ⎿  Wrote 51 lines to C:\Users\Oleg\Downloads\candidate-B-v4\candidate-B\w
+     eb\src\components\States.tsx
+       1 import type { ReportError } from '../api.ts';
+       2 import { formatDate, type IsoDate } from '../money.ts';
+       3 import { Alert } from './Icons.tsx';
+       4
+       5 export function LoadingState() {
+       6   return (
+       7     <div className="skeleton" aria-hidden="true">
+       8       <div className="summary">
+       9         <div className="summary__intro">
+      10           <span className="skeleton__line skeleton__line--short"
+     … +42 lines (~2 KB) (ctrl+o to expand)
+
+● Write(C:\Users\Oleg\Downloads\candidate-B-v4\candidate-B\web\src\App.tsx)
+  ⎿  Wrote 108 lines to
+     C:\Users\Oleg\Downloads\candidate-B-v4\candidate-B\web\src\App.tsx
+      1 import { useCallback, useEffect, useState } from 'react';
+      2
+      3 import { fetchReport, reportUrl, ReportError, type Report } from
+        './api.ts';
+      4 import { Contract } from './components/Contract.tsx';
+      5 import { DateControl } from './components/DateControl.tsx';
+      6 import { Mark } from './components/Icons.tsx';
+      7 import { EmptyState, ErrorState, LoadingState } from './component
+        s/States.tsx';
+      8 import { Summary } from './components/Summary.tsx';
+     … +100 lines (ctrl+o to expand)
+
+● Write(C:\Users\Oleg\Downloads\candidate-B-v4\candidate-B\web\src\main.tsx)
+  ⎿  Wrote 14 lines to
+     C:\Users\Oleg\Downloads\candidate-B-v4\candidate-B\web\src\main.tsx
+       1 import '@fontsource-variable/inter';
+       2 import '@fontsource-variable/source-serif-4';
+       3 import './styles.css';
+       4
+       5 import { StrictMode } from 'react';
+       6 import { createRoot } from 'react-dom/client';
+       7
+       8 import { App } from './App.tsx';
+       9
+      10 createRoot(document.getElementById('root')!).render(
+     … +4 lines (ctrl+o to expand)
+
+● Сейчас займусь стилями: цветовые токены для светлой и тёмной темы,
+  типографика, сетка и адаптация под телефон, а на узком экране таблица работ
+  станет карточками. · summary
+
+● Write(C:\Users\Oleg\Downloads\candidate-B-v4\candidate-B\web\src\styles.css)
+  ⎿  Wrote 1122 lines to
+     C:\Users\Oleg\Downloads\candidate-B-v4\candidate-B\web\src\styles.css
+      1 /* Расчёты с подрядчиками — «банковский» минимализм: тёплые нейтр
+        альные цвета,
+      2    один тёмно-зелёный акцент, засечки только для дат и крупных су
+        мм. */
+      3
+      4 :root {
+      5   color-scheme: light dark;
+      6
+      7   --font-sans: 'Inter Variable', system-ui, -apple-system, 'Segoe
+         UI', Roboto, sans-serif;
+     … +1115 lines (ctrl+o to expand)
+
+● Bash(cd "C:/Users/Oleg/Downloads/candidate-B-v4/candidate-B/web" && sed -i
+      's#"test": "node --test src/format.test.ts"#"test": "node --test
+      src/money.test.ts"#' pack…)
+  ⎿  (No output)
+
+● Типы проверены без ошибок, тесты проходят. Сейчас проверю, что tsc реально
+  охватывает файлы проекта, и затем соберу фронтенд. · summary
+
+● Bash(cd "C:/Users/Oleg/Downloads/candidate-B-v4/candidate-B/web" && npx tsc
+      --noEmit --listFilesOnly 2>&1 | grep -c "/src/" && printf 'const x: number
+      = "s";\nexport…)
+  ⎿  (No output)
+
+● Сборка готова: JS весит 74 КБ в gzip, а шрифты подгружаются по подмножествам
+  через unicode-range. Сейчас запущу сервис и сделаю скриншоты страницы в
+  headless Chrome. · summary
+
+● Bash(cd "C:/Users/Oleg/Downloads/candidate-B-v4/candidate-B" &&
+      (PYTHONIOENCODING=utf-8 python -m advance_report --port 8765 >
+      "$TEMP/adv_srv.log" 2>&1 &) ; for i in…)
+  ⎿  (No output)
+
+  Read 1 file (ctrl+o to expand)
+
+● Скриншот показал пять мелких огрехов в первом варианте: линии выходят за край
+  на 12px, подпись переносит сумму вниз, длинный статус сжимает назначение,
+  линия над подвалом шире контента и в легенде нет суммы. Сейчас поправлю все
+  пять. · summary
+
+● Update(C:\Users\Oleg\Downloads\candidate-B-v4\candidate-B\web\src\money.ts)
+  ⎿  Added 12 lines
+      20    return match[1] ? -kopecks : kopecks;
+      21  }
+      22 
+      23 +export function fromKopecks(kopecks: bigint): Money {          
+      24 +  const sign = kopecks < 0n ? '-' : '';                        
+      25 +  const absolute = kopecks < 0n ? -kopecks : kopecks;          
+      26 +  return `${sign}${absolute / 100n}.${String(absolute % 100n).p
+         +adStart(2, '0')}`;                                             
+      27 +}                                                              
+      28 +                                                               
+      29  export function isZero(value: Money): boolean {
+      30    return toKopecks(value) === 0n;
+      31  }
+      32 
+      33 +/** Сколько ещё не оплачено и не стоит в очереди: остаток минус
+         + очередь, не меньше нуля. */                                   
+      34 +export function unscheduled(remaining: Money, queued: Money): M
+         +oney {                                                         
+      35 +  const rest = toKopecks(remaining) - toKopecks(queued);       
+      36 +  return fromKopecks(rest > 0n ? rest : 0n);                   
+      37 +}                                                              
+      38 +                                                               
+      39  /** "185000.00" → "185 000,00" (неразрывные пробелы между разря
+          дами). */
+      40  export function formatMoney(value: Money): string {
+      41    const match = MONEY_RE.exec(value);
+
+● Update(C:\Users\Oleg\Downloads\candidate-B-v4\candidate-B\web\src\money.test.t
+        s)
+  ⎿  Added 12 lines
+      15    assert.throws(() => toKopecks('1e3'));
+      16  });
+      17 
+      18 +test('fromKopecks round-trips', () => {                        
+      19 +  for (const value of ['0.00', '0.05', '185000.00', '1234567.89
+         +', '-5000.00']) {                                              
+      20 +    assert.equal(fromKopecks(toKopecks(value)), value);        
+      21 +  }                                                            
+      22 +});                                                            
+      23 +                                                               
+      24 +test('unscheduled: remaining minus queued, never negative', () 
+         +=> {                                                           
+      25 +  assert.equal(unscheduled('185000.00', '150000.00'), '35000.00
+         +');                                                            
+      26 +  assert.equal(unscheduled('15000.00', '0.00'), '15000.00');   
+      27 +  assert.equal(unscheduled('20.00', '50.00'), '0.00');         
+      28 +});                                                            
+      29 +                                                               
+      30  test('formatMoney groups thousands with non-breaking spaces', (
+          ) => {
+      31    assert.equal(formatMoney('185000.00'), `185${NBSP}000,00`);
+      32    assert.equal(formatMoney('1234567.05'), `1${NBSP}234${NBSP}56
+          7,05`);
+
+● Update(C:\Users\Oleg\Downloads\candidate-B-v4\candidate-B\web\src\money.test.t
+        s)
+  ⎿  Added 2 lines, removed 1 line
+      2  import { test } from 'node:test';
+      3 
+      4  import {
+      5 -  barSegments, formatDate, formatLongDate, formatMoney, isIsoDat
+        -e, plural, shiftDate, toKopecks, todayIso,                      
+      5 +  barSegments, formatDate, formatLongDate, formatMoney, fromKope
+        +cks, isIsoDate, plural, shiftDate, toKopecks,                   
+      6 +  todayIso, unscheduled,                                        
+      7  } from './money.ts';
+      8 
+      9  const NBSP = ' ';
+
+● Update(C:\Users\Oleg\Downloads\candidate-B-v4\candidate-B\web\src\components\C
+        ontract.tsx)
+  ⎿  Added 1 line
+      68 
+      69  function PaymentBar({ totals }: { totals: Totals }) {
+      70    const segments = barSegments(totals);
+      71 +  const rest = unscheduled(totals.remaining, totals.queued);   
+      72    const description = [
+      73      ...segments.map(({ part }) => `${BAR_LABELS[part]} ${format
+          Rub(totals[BAR_VALUES[part]])}`),
+      74      `стоимость работ ${formatRub(totals.works_due)}`,
+
+● Update(C:\Users\Oleg\Downloads\candidate-B-v4\candidate-B\web\src\components\C
+        ontract.tsx)
+  ⎿  Added 7 lines, removed 4 lines
+       91              <span className="legend__value">{formatMoney(total
+           s[BAR_VALUES[part]])}</span>
+       92            </span>
+       93          ))}
+       94 -        <span className="legend__item legend__item--rest">    
+       95 -          <span className="legend__swatch legend__swatch--rest
+          -" aria-hidden="true" />                                       
+       96 -          Ещё не оплачено и не в очереди                      
+       97 -        </span>                                               
+       94 +        {!isZero(rest) && (                                   
+       95 +          <span className="legend__item">                     
+       96 +            <span className="legend__swatch legend__swatch--re
+          +st" aria-hidden="true" />                                     
+       97 +            Ещё не оплачено и не в очереди                    
+       98 +            <span className="legend__value">{formatMoney(rest)
+          +}</span>                                                      
+       99 +          </span>                                             
+      100 +        )}                                                    
+      101        </figcaption>
+      102      </figure>
+      103    );
+
+● Update(C:\Users\Oleg\Downloads\candidate-B-v4\candidate-B\web\src\components\C
+        ontract.tsx)
+  ⎿  Added 3 lines, removed 1 line
+      1  import { useState, type CSSProperties } from 'react';
+      2 
+      3  import type { ContractReport, PaymentSource, Totals, WorkLine }
+         from '../api.ts';
+      4 -import { barSegments, formatDate, formatMoney, formatRub, isZero
+        -, type BarPart, type Money } from '../money.ts';                
+      4 +import {                                                        
+      5 +  barSegments, formatDate, formatMoney, formatRub, isZero, unsch
+        +eduled, type BarPart, type Money,                               
+      6 +} from '../money.ts';                                           
+      7  import { Alert } from './Icons.tsx';
+      8  import { PaymentStatus, WorkStatus } from './Status.tsx';
+      9 
+
+● Теперь правки в CSS.
+
+● Update(C:\Users\Oleg\Downloads\candidate-B-v4\candidate-B\web\src\styles.css)
+  ⎿  Added 21 lines, removed 4 lines
+      572    font-size: 0.875rem;
+      573  }
+      574 
+      575 +/* Таблица шире контента на 0.75rem с каждой стороны — под фон
+          + подсветки строки.                                            
+      576 +   Линии рисуются фоном ячеек и у крайних ячеек укорочены, что
+          +бы совпасть с краем контента. */                              
+      577 +.table thead th,                                              
+      578 +.table td,                                                    
+      579 +.table tbody th {                                             
+      580 +  --line: var(--hairline);                                    
+      581 +  background: linear-gradient(var(--line), var(--line)) bottom
+          + / 100% 1px no-repeat;                                        
+      582 +  text-align: left;                                           
+      583 +}                                                             
+      584 +                                                              
+      585  .table thead th {
+      586 +  --line: var(--hairline-strong);                             
+      587    padding: 0 0.75rem 0.625rem;
+      577 -  border-bottom: 1px solid var(--hairline-strong);            
+      578 -  text-align: left;                                           
+      588    white-space: nowrap;
+      589  }
+      590 
+      591 +.table tr > :first-child {                                    
+      592 +  background-position: bottom right;                          
+      593 +  background-size: calc(100% - 0.75rem) 1px;                  
+      594 +}                                                             
+      595 +                                                              
+      596 +.table tr > :last-child {                                     
+      597 +  background-position: bottom left;                           
+      598 +  background-size: calc(100% - 0.75rem) 1px;                  
+      599 +}                                                             
+      600 +                                                              
+      601  .table td,
+      602  .table tbody th {
+      603    padding: 0.875rem 0.75rem;
+      585 -  border-bottom: 1px solid var(--hairline);                   
+      604    font-weight: 400;
+      587 -  text-align: left;                                           
+      605    vertical-align: baseline;
+      606  }
+      607 
+
+● Update(C:\Users\Oleg\Downloads\candidate-B-v4\candidate-B\web\src\styles.css)
+  ⎿  Added 23 lines, removed 3 lines
+      789    list-style: none;
+      790  }
+      791 
+      792 +/* Строка платежа: номер · назначение и сумма, под назначением
+          + — статус на дату. */                                         
+      793  .payment {
+      794 +  position: relative;                                         
+      795    display: grid;
+      794 -  grid-template-columns: 2.5rem minmax(0, 1fr) auto 7rem;     
+      795 -  gap: 0.5rem 1rem;                                           
+      796 +  grid-template-columns: 2.5rem minmax(0, 1fr) auto;          
+      797 +  gap: 0.125rem 1rem;                                         
+      798    align-items: baseline;
+      799    margin-inline: -0.75rem;
+      800    padding: 0.6875rem 0.75rem;
+      799 -  border-bottom: 1px solid var(--hairline);                   
+      801    font-size: 0.875rem;
+      802    transition: background-color 120ms ease;
+      803  }
+      804 
+      805 +.payment::after {                                             
+      806 +  content: '';                                                
+      807 +  position: absolute;                                         
+      808 +  inset: auto 0.75rem 0;                                      
+      809 +  height: 1px;                                                
+      810 +  background: var(--hairline);                                
+      811 +}                                                             
+      812 +                                                              
+      813 +.payment .status {                                            
+      814 +  grid-row: 2;                                                
+      815 +  grid-column: 2 / -1;                                        
+      816 +  white-space: normal;                                        
+      817 +}                                                             
+      818 +                                                              
+      819 +.payment__amount {                                            
+      820 +  grid-row: 1;                                                
+      821 +  grid-column: 3;                                             
+      822 +}                                                             
+      823 +                                                              
+      824  .payment:hover,
+      825  .payment.is-highlighted {
+      826    background: var(--accent-soft);
+
+● Update(C:\Users\Oleg\Downloads\candidate-B-v4\candidate-B\web\src\styles.css)
+  ⎿  Added 4 lines, removed 8 lines
+      1119      display: none;
+      1120    }
+      1121 
+      1122 -  .payment {                                                 
+      1123 -    grid-template-columns: 2.5rem minmax(0, 1fr) auto;       
+      1122 +  .table thead th,                                           
+      1123 +  .table td,                                                 
+      1124 +  .table tbody th {                                          
+      1125 +    background: none;                                        
+      1126    }
+      1125 -                                                             
+      1126 -  .payment .status {                                         
+      1127 -    grid-row: 2;                                             
+      1128 -    grid-column: 2 / -1;                                     
+      1129 -    white-space: normal;                                     
+      1130 -  }                                                          
+      1127  }
+      1128 
+      1129  /* ---------- Печать ---------- */
+● Update(C:\Users\Oleg\Downloads\candidate-B-v4\candidate-B\web\src\styles.css)
+  ⎿  Added 2 lines, removed 2 lines
+      855    justify-content: space-between;
+      856    align-items: start;
+      857    gap: 1rem 3rem;
+      858 -  max-width: var(--content);                                  
+      858 +  width: min(100% - 2 * var(--gutter), var(--content) - 2 * va
+          +r(--gutter));                                                 
+      859    margin: clamp(4rem, 8vw, 6rem) auto 0;
+      860 -  padding: 1.5rem var(--gutter) 3rem;                         
+      860 +  padding: 1.5rem 0 3rem;                                     
+      861    border-top: 1px solid var(--hairline);
+      862    font-size: 0.8125rem;
+      863    color: var(--ink-muted);
+
+● Update(C:\Users\Oleg\Downloads\candidate-B-v4\candidate-B\web\src\styles.css)
+  ⎿  Added 10 lines
+      338    border-top: 1px solid var(--ink);
+      339  }
+      340 
+      341 +/* Подпись, сумма и пояснение каждой карточки лежат в общих ря
+          +дах сетки (subgrid):                                          
+      342 +   если подпись переносится на две строки, суммы соседей всё р
+          +авно на одной линии. */                                       
+      343  .kpi {
+      344 +  display: grid;                                              
+      345 +  grid-row: span 3;                                           
+      346 +  grid-template-rows: subgrid;                                
+      347 +  align-content: start;                                       
+      348    min-width: 0;
+      349    margin: 0;
+      350    padding: 1rem 1rem 0.25rem 0;
+      351  }
+      352 
+      353 +.kpi dt {                                                     
+      354 +  align-self: end;                                            
+      355 +}                                                             
+      356 +                                                              
+      357  .kpi dd {
+      358    margin: 0;
+      359  }
+
+● Пересоберу фронт и сниму три скриншота: десктоп в светлой теме, десктоп в
+  тёмной и телефон.
+
+● Bash(cd "C:/Users/Oleg/Downloads/candidate-B-v4/candidate-B/web" && npm test
+      2>&1 | grep -E "^ℹ (pass|fail)" && npm run build 2>&1 | grep -E
+      "error|built" ; SHOT="C:…)
+  ⎿  (No output)
+
+  Read 2 files (ctrl+o to expand)
+
+● Подписи и суммы в карточках теперь выровнены, но у первой колонки таблицы
+  линия выше и короче соседних, потому что display: flex на <th> сломал
+  табличную ячейку. Сначала проверю мобильную версию, а потом исправлю.
+  · summary
+
+  Read 1 file (ctrl+o to expand)
+
+● На мобильной версии две проблемы: таблица работ не превращается в карточки
+  из-за перебивающего правила display: block, а правый край обрезан, скорее
+  всего из-за ограничения headless Chrome по ширине окна. Сейчас проверю,
+  загрузив страницу в iframe шириной 390px. · summary
+
+● Update(C:\Users\Oleg\Downloads\candidate-B-v4\candidate-B\web\src\components\C
+        ontract.tsx)
+  ⎿  Added 5 lines, removed 3 lines
+      139                  paidBy(work, highlight) && 'is-highlighted',
+      140                ].filter(Boolean).join(' ')}
+      141              >
+      142 -              <th scope="row" className="work">               
+      143 -                <span className="id">{work.work_id}</span>    
+      144 -                <span className="work__title">{work.title}</sp
+          -an>                                                           
+      142 +              <th scope="row" className="work-cell">          
+      143 +                <span className="work">                       
+      144 +                  <span className="id">{work.work_id}</span>  
+      145 +                  <span className="work__title">{work.title}</
+          +span>                                                         
+      146 +                </span>                                       
+      147                </th>
+      148                <td data-label="Статус"><WorkStatus work={work}
+           /></td>
+      149                <td data-label="Цена" className="num work__price
+           ">{formatMoney(work.price)}</td>
+
+● Update(C:\Users\Oleg\Downloads\candidate-B-v4\candidate-B\web\src\styles.css)
+  ⎿  Added 6 lines, removed 2 lines
+      1086      margin-inline: 0;
+      1087    }
+      1088 
+      1089 -  .table__row {                                              
+      1089 +  .table .table__row {                                       
+      1090      display: grid;
+      1091      grid-template-columns: repeat(3, minmax(0, 1fr));
+      1092      gap: 0.75rem 1rem;
+     ...
+      1094      border-bottom: 1px solid var(--hairline);
+      1095    }
+      1096 
+      1097 -  .table__row:hover {                                        
+      1097 +  .table .table__row:hover {                                 
+      1098      background: none;
+      1099    }
+      1100 
+      1101 +  .table .table__row.is-highlighted {                        
+      1102 +    background: var(--accent-soft);                          
+      1103 +  }                                                          
+      1104 +                                                             
+      1105    .table td,
+      1106    .table tbody th {
+      1107      padding: 0;
+
+● Update(C:\Users\Oleg\Downloads\candidate-B-v4\candidate-B\web\src\styles.css)
+  ⎿  Added 1 line, removed 1 line
+      1112      text-align: left;
+      1113    }
+      1114 
+      1115 -  .table tbody th.work,                                      
+      1115 +  .table tbody th.work-cell,                                 
+      1116    .table td[data-label='Статус'],
+      1117    .table td[data-label='Чем оплачено'] {
+      1118      grid-column: 1 / -1;
+
+● Bash(cd "C:/Users/Oleg/Downloads/candidate-B-v4/candidate-B/web" && npm run
+      build 2>&1 | grep -E "error|built";
+      SHOT="C:/Users/Oleg/AppData/Local/Temp/claude/0042c6e…)
+  ⎿  (No output)
+
+  Read 2 files (ctrl+o to expand)
+
+● Таблица на десктопе выровнялась. Данные в iframe не успели загрузиться до
+  снимка, поэтому остался скелетон; повторю съёмку с большим запасом времени.
+  · summary
+
+● Bash(SHOT="C:/Users/Oleg/AppData/Local/Temp/claude/0042c6ecd1520d1c/cec18dc7-3
+      a80-4ff9-b393-00256b1d1760/scratchpad"; CHROME="/c/Program
+      Files/Google/Chrome/Applicat…)
+  ⎿  (No output)
+
+● Снимок снова пустой, файл весит 23 КБ. Попробую ожидание по реальному времени,
+  потому что виртуальное время headless Chrome, похоже, не ждёт запросов во
+  фрейме. · summary
+
+● Bash(SHOT="C:/Users/Oleg/AppData/Local/Temp/claude/0042c6ecd1520d1c/cec18dc7-3
+      a80-4ff9-b393-00256b1d1760/scratchpad"; CHROME="/c/Program
+      Files/Google/Chrome/Applicat…)
+  ⎿  (No output)
+
+● Всё ещё пусто. Посмотрю в лог сервиса: доходит ли запрос из фрейма до сервера.
+
+  Read 1 file (ctrl+o to expand)
+
+● Запрос /report из фрейма до сервера не доходит, похоже, Chrome придерживает
+  таймеры кросс-доменного фрейма в headless-режиме. Чинить Chrome не стану, а
+  сниму скриншот, эмулируя телефон через DevTools Protocol скриптом без
+  зависимостей на встроенном WebSocket Node 24. · summary
+
+  Made 1 scratchpad edit +53 (ctrl+o to expand)
+
+● Bash(SHOT="C:/Users/Oleg/AppData/Local/Temp/claude/0042c6ecd1520d1c/cec18dc7-3
+      a80-4ff9-b393-00256b1d1760/scratchpad"; cd "$SHOT" && node shot.mjs
+      "http://127.0.0.1:8…)
+  ⎿  (No output)
+  ⎿  (timeout 2m)
+
+● Горизонтальной прокрутки на 390px нет. Страница длинная, поэтому сниму её
+  тремя частями. · summary
+
+● Bash(SHOT="C:/Users/Oleg/AppData/Local/Temp/claude/0042c6ecd1520d1c/cec18dc7-3
+      a80-4ff9-b393-00256b1d1760/scratchpad"; cd "$SHOT" && python - <<'EOF'
+      from pathlib imp…)
+  ⎿  (No output)
+  ⎿  (timeout 2m)
+
+  Read 2 files (ctrl+o to expand)
+
+● На телефоне всё на месте, без горизонтальной прокрутки. Две мелочи правлю:
+  статус платежа P-2 разъезжается в две колонки, а у отменённой работы
+  перечёркнута и подпись «ЦЕНА». · summary
+
+  Read 1 file (ctrl+o to expand)
+
+● Write(C:\Users\Oleg\Downloads\candidate-B-v4\candidate-B\web\src\components\St
+       atus.tsx)
+  ⎿  Added 4 lines, removed 4 lines
+       5 
+       6  type Tone = 'done' | 'planned' | 'cancelled' | 'queued' | 'refu
+          nded';
+       7 
+       8 -function Badge({ tone, children }: { tone: Tone; children: Reac
+         -tNode }) {                                                     
+       8 +function Badge({ tone, children, note }: { tone: Tone; children
+         +: ReactNode; note?: ReactNode }) {                             
+       9    return (
+      10      <span className={`status status--${tone}`}>
+      11        <span className="status__dot" aria-hidden="true" />
+      12 -      {children}                                               
+      12 +      <span className="status__text">{children}</span>         
+      13 +      {note && <span className="status__note">{note}</span>}   
+      14      </span>
+      15    );
+      16  }
+     ...
+      32        return <Badge tone="done">Оплачен {formatDate(payment.pai
+          d_at!)}</Badge>;
+      33      case 'refunded':
+      34        return (
+      34 -        <Badge tone="refunded">                                
+      35 +        <Badge tone="refunded" note={`оплачен ${formatDate(paym
+         +ent.paid_at!)}`}>                                              
+      36            Возвращён {formatDate(payment.refunded_at!)}
+      36 -          <span className="status__note">оплачен {formatDate(pa
+         -yment.paid_at!)}</span>                                        
+      37          </Badge>
+      38        );
+      39      case 'queued':
+● Update(C:\Users\Oleg\Downloads\candidate-B-v4\candidate-B\web\src\styles.css)
+  ⎿  Added 6 lines, removed 1 line
+      688 
+      689  .status {
+      690    display: inline-flex;
+      691 +  flex-wrap: wrap;                                            
+      692    align-items: center;
+      692 -  gap: 0.5rem;                                                
+      693 +  column-gap: 0.5rem;                                         
+      694    font-size: 0.8125rem;
+      695    font-variant-numeric: tabular-nums;
+      696 +}                                                             
+      697 +                                                              
+      698 +.status__text,                                                
+      699 +.status__note {                                               
+      700    white-space: nowrap;
+      701  }
+      702 
+
+● Update(C:\Users\Oleg\Downloads\candidate-B-v4\candidate-B\web\src\styles.css)
+  ⎿  Added 1 line, removed 1 line
+      642  }
+      643 
+      644  .is-cancelled .work__title,
+      645 -.is-cancelled .work__price {                                  
+      645 +.is-cancelled .work__price .amount {                          
+      646    color: var(--ink-muted);
+      647    text-decoration: line-through;
+      648    text-decoration-color: var(--ink-subtle);
+
+● Update(C:\Users\Oleg\Downloads\candidate-B-v4\candidate-B\web\src\components\C
+        ontract.tsx)
+  ⎿  Added 3 lines, removed 1 line
+      146                  </span>
+      147                </th>
+      148                <td data-label="Статус"><WorkStatus work={work}
+           /></td>
+      149 -              <td data-label="Цена" className="num work__price
+          -">{formatMoney(work.price)}</td>                              
+      149 +              <td data-label="Цена" className="num work__price
+          +">                                                            
+      150 +                <span className="amount">{formatMoney(work.pri
+          +ce)}</span>                                                   
+      151 +              </td>                                           
+      152                <td data-label="Выплачено" className="num">
+      153                  <Amount value={work.paid} />
+      154                </td>
+
+● Update(C:\Users\Oleg\Downloads\candidate-B-v4\candidate-B\web\src\styles.css)
+  ⎿  Couldn't edit file
+
+● Bash(cd "C:/Users/Oleg/Downloads/candidate-B-v4/candidate-B/web" && npm run
+      build 2>&1 | grep -E "error|built";
+      SHOT="C:/Users/Oleg/AppData/Local/Temp/claude/0042c6e…)
+  ⎿  (No output)
+  ⎿  (timeout 3m)
+
+● Правка не сработала, но это ничего не меняет: блока в мобильных стилях уже
+  нет, а базовое правило совместимо с новой разметкой. Сейчас посмотрю отчёт на
+  12.11. · summary
+
+  Read 2 files (ctrl+o to expand)
+
+● Переплата 12.11 уже посчитана и выделена красным. Пятую карточку убираю, а
+  переплату переношу отдельной строкой в блок «Осталось оплатить»; ещё уберу «·»
+  перед «оплачен …» у возвращённого платежа. · summary
+
+● Update(C:\Users\Oleg\Downloads\candidate-B-v4\candidate-B\web\src\components\S
+        ummary.tsx)
+  ⎿  Added 5 lines
+      23            <dt>Осталось оплатить</dt>
+      24            <dd className="figure">{formatRub(totals.remaining)}<
+          /dd>
+      25            <dd className="kpi__note">по всем договорам, аванс уж
+          е вычтен</dd>
+      26 +          {!isZero(totals.overpaid) && (                       
+      27 +            <dd className="kpi__alert">                        
+      28 +              Переплата {formatRub(totals.overpaid)} — выплачен
+         +о больше, чем стоят работы. Подробности в договоре ниже.       
+      29 +            </dd>                                              
+      30 +          )}                                                   
+      31          </div>
+      32          <div className="kpi">
+      33            <dt>Выплачено</dt>
+
+● Update(C:\Users\Oleg\Downloads\candidate-B-v4\candidate-B\web\src\components\S
+        ummary.tsx)
+  ⎿  Removed 7 lines
+      44            <dd className="kpi__value">{formatRub(totals.queued)}
+          </dd>
+      45            <dd className="kpi__note">ещё не ушло подрядчикам</dd
+          >
+      46          </div>
+      47 -        {!isZero(totals.overpaid) && (                         
+      48 -          <div className="kpi kpi--bad">                       
+      49 -            <dt>Переплата</dt>                                 
+      50 -            <dd className="kpi__value">{formatRub(totals.overpa
+         -id)}</dd>                                                      
+      51 -            <dd className="kpi__note">выплачено сверх стоимости
+         - работ</dd>                                                    
+      52 -          </div>                                               
+      53 -        )}                                                     
+      47        </dl>
+      48      </section>
+      49    );
+
+● Update(C:\Users\Oleg\Downloads\candidate-B-v4\candidate-B\web\src\styles.css)
+  ⎿  Added 10 lines
+      359  }
+      360 
+      361  .kpi--primary {
+      362 +  display: block;                                             
+      363 +  grid-row: auto;                                             
+      364    grid-column: 1 / -1;
+      365    padding: 1.25rem 0 1.5rem;
+      366    border-bottom: 1px solid var(--hairline);
+      367  }
+      368 
+      369 +.kpi__alert {                                                 
+      370 +  margin-top: 0.75rem !important;                             
+      371 +  padding-left: 0.75rem;                                      
+      372 +  border-left: 2px solid var(--bad);                          
+      373 +  font-size: 0.8125rem;                                       
+      374 +  color: var(--bad);                                          
+      375 +}                                                             
+      376 +                                                              
+      377  .kpi:not(.kpi--primary):not(:nth-child(3n + 2)) {
+      378    padding-left: 1.25rem;
+      379    border-left: 1px solid var(--hairline);
+
+● Update(C:\Users\Oleg\Downloads\candidate-B-v4\candidate-B\web\src\styles.css)
+  ⎿  Removed 4 lines
+      413    color: var(--warn-ink);
+      414  }
+      415 
+      416 -.kpi--bad .kpi__value {                                       
+      417 -  color: var(--bad);                                          
+      418 -}                                                             
+      419 -                                                              
+      416  /* ---------- Договор ---------- */
+      417 
+      418  .contract {
+
+● Update(C:\Users\Oleg\Downloads\candidate-B-v4\candidate-B\web\src\styles.css)
+  ⎿  Removed 4 lines
+      740    color: var(--ink-subtle);
+      741  }
+      742 
+      743 -.status__note::before {                                       
+      744 -  content: '· ';                                              
+      745 -}                                                             
+      746 -                                                              
+      743  /* Итоги и платежи */
+      744 
+      745  .contract__split {
+
+● Update(C:\Users\Oleg\Downloads\candidate-B-v4\candidate-B\web\src\components\S
+        tatus.tsx)
+  ⎿  Added 1 line, removed 1 line
+      32        return <Badge tone="done">Оплачен {formatDate(payment.pai
+          d_at!)}</Badge>;
+      33      case 'refunded':
+      34        return (
+      35 -        <Badge tone="refunded" note={`оплачен ${formatDate(paym
+         -ent.paid_at!)}`}>                                              
+      35 +        <Badge tone="refunded" note={`(оплачен ${formatDate(pay
+         +ment.paid_at!)})`}>                                            
+      36            Возвращён {formatDate(payment.refunded_at!)}
+      37          </Badge>
+      38        );
+
+● Пересоберу сводку на 12.11 и проверю пустое состояние и ошибку в данных; для
+  ошибки подниму второй экземпляр сервиса с битым CSV во временной папке.
+  · summary
+
+● Bash(cd "C:/Users/Oleg/Downloads/candidate-B-v4/candidate-B/web" && npm run
+      typecheck 2>&1 | grep -v "^>" | grep . ; npm run build 2>&1 | grep -E
+      "error|built"; SHOT…)
+  ⎿  (No output)
+  ⎿  (timeout 3m)
+
+  Read 2 files (ctrl+o to expand)
+
+● Все состояния ведут себя как задумано, включая ошибку с перечнем строк,
+  переплату в сводке и тёмную тему. Сейчас останавливаю второй экземпляр сервиса
+  и запускаю все проверки: Python-тесты, типы и фронтенд. · summary
+
+● PowerShell(foreach ($port in 8766) { $c = Get-NetTCPConnection -LocalPort
+            $port -State Listen -ErrorAction SilentlyContinue; if ($c) {
+            Stop-Process -Id $c.OwningProcess -C…)
+  ⎿  stopped 8766
+
+● Bash(cd "C:/Users/Oleg/Downloads/candidate-B-v4/candidate-B" &&
+      PYTHONIOENCODING=utf-8 python -m unittest 2>&1 | tail -2 && cd web && npm
+      run typecheck 2>&1 | grep -…)
+  ⎿  (No output)
+  ⎿  (timeout 3m)
+
+● Всё прошло проверку; сейчас обновляю README, DECISIONS.md и .gitignore.
+  · summary
+
+  Read 1 file (ctrl+o to expand)
+
+● Bash(cd "C:/Users/Oleg/Downloads/candidate-B-v4/candidate-B" && python -
+      <<'EOF'
+      from pathlib import Path…)
+  ⎿  (No output)
+
+● Bash(cd "C:/Users/Oleg/Downloads/candidate-B-v4/candidate-B" && cat >>
+      DECISIONS.md <<'EOF'…)
+  ⎿  (No output)
+● Закоммичу и проверю чистый клон: что в git попало всё нужное и интерфейс
+  отдаётся без node_modules.
+
+● Bash(cd "C:/Users/Oleg/Downloads/candidate-B-v4/candidate-B" && find . -name
+      __pycache__ -type d -prune -exec rm -rf {} + ; git add -A && git status
+      --short | grep -…)
+  ⎿  No matches found
+
+● Bash(cd "C:/Users/Oleg/Downloads/candidate-B-v4/candidate-B" && echo "on disk:
+      $(find advance_report/static -type f | wc -l), staged: $(git diff
+      --cached --name-only…)
+  ⎿  (No output)
+  ⎿  (timeout 2m)
+
+● Чистый клон отдаёт и интерфейс, и API. Останавливаю тестовые серверы и удаляю
+  временный клон.
+
+● PowerShell(foreach ($port in 8765, 8767) { $c = Get-NetTCPConnection
+            -LocalPort $port -State Listen -ErrorAction SilentlyContinue; if
+            ($c) { Stop-Process -Id $c.OwningProc…)
+  ⎿  stopped 8765
+     stopped 8767
+
+● Фронт на React сделан. Сервис по-прежнему запускается одной командой, Node для
+  этого не нужен:
+
+  python -m advance_report
+
+  Дальше открыть в браузере http://127.0.0.1:8000/?date=2026-11-10.
+
+  Как выглядит. Строгий «банковский» минимализм:
+  - тёплый светлый фон и один тёмно-зелёный акцент;
+  - шрифт Inter для интерфейса, засечный Source Serif для даты и крупных сумм;
+  - тёмная тема включается сама по настройке системы;
+  - на телефоне таблица работ превращается в карточки.
+
+  Что на странице:
+  - Шапка: выбор даты и стрелки «±1 день». Так видно, как отчёт меняется после
+    событий: 11.11 принята W-23, 12.11 появляется переплата 5 000 по D-2.
+  - Сводка: крупно «Осталось оплатить» по всем договорам. Рядом выплачено, долг
+    за принятые работы и сумма в очереди.
+  - Договор: полоса оплаты (зачтено в работы, аванс, в очереди, остаток) и
+    предупреждения. Ниже таблица работ с колонкой «Чем оплачено». При наведении
+    на платёж подсвечиваются работы, которые он закрыл, — это прямой ответ
+    бухгалтеру «за что мы рассчитались».
+  - Итоги и список платежей по договору, у каждого платежа статус на выбранную
+    дату.
+  - Особые случаи: пока идёт загрузка, страница показывает заготовку. Если на
+    дату нет договоров, так и пишет. Если в CSV ошибки, перечисляет их
+    построчно.
+
+  Как устроено:
+  - Все суммы считает Python-сервер, фронт их только показывает. Сам он
+    вычисляет лишь ширину полосы и «остаток минус очередь», в копейках через
+    BigInt, без float.
+  - Собранный фронт лежит в advance_report/static/ и закоммичен. Поэтому
+    проверяющим хватит Python, а Node нужен только чтобы менять интерфейс.
+  - В API добавил общий итог по всем договорам, сервер теперь отдаёт и сам
+    интерфейс.
+
+  Проверено:
+  - 59 Python-тестов и 8 тестов фронта проходят, проверка типов чистая.
+  - Смотрел скриншоты: десктоп в светлой и тёмной теме, телефон шириной 390px
+    (горизонтальной прокрутки нет), состояние ошибки в данных и отчёт на 12.11 с
+    переплатой.
+  - Чистый клон репозитория отдаёт и интерфейс, и API.
+
+  Изменения — вторым коммитом в main. Пример скриншота:
+  C:\Users\Oleg\AppData\Local\Temp\claude\0042c6ecd1520d1c\cec18dc7-3a80-4ff9-b3
+  93-00256b1d1760\scratchpad\desktop-light.png.
+
+  В задании сказано «интерфейс не нужен», и проверяющие могут счесть его лишним.
+  Поэтому в DECISIONS.md я записал его отдельным решением: интерфейс поверх
+  того же API, удаляется без последствий для расчёта.
+
+  Напоминаю, что осталось за тобой: выгрузить транскрипт командой /export в
+  папку transcripts/ и сделать репозиторий на GitHub приватным.
